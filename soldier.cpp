@@ -3,13 +3,15 @@
 //
 
 #include "soldier.h"
+#include "base.h"
 
 #include <iostream>
 
 void soldier::display(SDL_Renderer *renderer, const texwrap& soldierTexture) const {
     soldierTexture.render(x,y,renderer,1.0,true);
 
-
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawLine(renderer,x,y,postX,postY);
     /*
     double p_angle=0;
     double dtheta = 0.1;
@@ -31,7 +33,7 @@ void soldier::shoot(std::list<projectile> &projectiles, const std::vector<soldie
         double dist = sqrt(pow(x-soldiers[i].x,2)+pow(y-soldiers[i].y,2));
 
         //We wouldn't want to shoot ourselves, and we wouldn't waste bullets on someone out of range
-        if (dist>16 && dist<range && soldiers[i].allegience!=allegience) {
+        if (dist>16 && dist<range && soldiers[i].allegiance!=allegiance) {
             totalWeight+=range-dist;
             targets.emplace_back(totalWeight,i);
         }

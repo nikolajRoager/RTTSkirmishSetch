@@ -7,6 +7,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
+#include "base.h"
 #include "projectile.h"
 #include "soldier.h"
 #include "texwrap.h"
@@ -67,35 +68,46 @@ int main() {
 
     std::default_random_engine generator;
 
-    std::vector<soldier> soldiers;
+    std::list<std::shared_ptr<soldier>> soldiers;
+
+    std::vector<base> bases;
+
     std::list<projectile> projectiles;
 
-    //Randomly generate soldiers
+    //Randomly generate bases
     {
-        int widthNodes = 16;
-        int heightNodes = 8;
-        double neighbourDistance = windowWidthPx*2 / widthNodes;
-        std::uniform_real_distribution<double> widthDist (0,0.75*windowWidthPx/widthNodes );
-        std::uniform_real_distribution<double> heightDist (0,0.75*windowHeightPx/heightNodes );
-        std::uniform_int_distribution<int> allegiences (0,3);
+        int basesWidth = 6;
+        int basesHeight = 3;
+        double radius = 0.25*windowWidthPx / (basesWidth-1);
+        std::uniform_real_distribution<double> widthDist (windowHeightPx/(basesHeight-1)*0.25,windowWidthPx/(basesWidth-1)*0.75 );
+        std::uniform_real_distribution<double> heightDist (windowHeightPx/(basesHeight-1)*0.25,windowHeightPx/(basesHeight-1)*0.75 );
+        std::uniform_int_distribution<int> allegiances (0,3);
 
-        for (int j = 0; j < heightNodes; j++)
-            for (int i = 0; i < widthNodes; i++)
-                soldiers.emplace_back(widthDist(generator)+i*windowWidthPx/widthNodes,heightDist(generator)+j*windowHeightPx/heightNodes,allegiences(generator));
+        for (int j = 0; j < basesHeight-1; j++)
+            for (int i = 0; i < basesWidth-1; i++)
+                bases.emplace_back(widthDist(generator)+(i+0.5)*windowWidthPx/basesWidth,heightDist(generator)+(j+0.5)*windowHeightPx/basesHeight,radius);
     }
 
-    projectiles.emplace_back(5,5,500,1000,1000);
+
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()+20,bases[0].getY(),0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX(),bases[0].getY()+20,0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX(),bases[0].getY()-20,0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY(),0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY()-20,0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY()-40,0));
+
 
     //Run
     bool quit = false;
 
-    unsigned int pmillis=-1;
+    unsigned int pmillis=SDL_GetTicks();
 
     while (!quit) {
 
         //Milliseconds since program start is preferred time measurement for animations
         unsigned int millis = SDL_GetTicks();
-        double dt = pmillis==-1? 0.0 : ( millis - pmillis ) * 0.001;
+        //MAY be 0 on the very first loop
+        double dt =  ( millis - pmillis ) * 0.001;
 
         //Poll events
         SDL_Event event;
@@ -105,13 +117,25 @@ int main() {
             }
         }
 
-        for (soldier& s: soldiers) {
-            s.shoot(projectiles,soldiers,generator,dt);
+        for (std::shared_ptr<soldier> s: soldiers) {
+            if (s->unassigned()) {
+                int nearestBase = -1;
+                double nearestDistance = 0;
+                for (int i = 0 ; i < bases.size(); i++) {
+                    double distance = sqrt(pow(s->getX()-bases[i].getX(),2)+pow(s->getY()-bases[i].getY(),2));
+                    if (nearestBase==-1|| distance < nearestDistance) {
+                        nearestBase = i;
+                        nearestDistance = distance;
+                    }
+                }
+                s->setBase(&bases[nearestBase]);
+                bases[nearestBase].addSoldier(s);
+            }
+ //           s.shoot(projectiles,soldiers,generator,dt);
         }
         for (projectile& projectile : projectiles) {
             projectile.update(dt);
         }
-
         projectiles.remove_if([](const projectile& projectile) {
             return projectile.isDead();
         });
@@ -122,8 +146,12 @@ int main() {
         SDL_SetRenderDrawColor(renderer, 0x40, 0xF0, 0x40, 0x00);
         SDL_RenderClear( renderer );
 
-        for (soldier& soldier : soldiers) {
-            soldier.display(renderer,soldierTexture);
+        for (const base& base : bases) {
+            base.display(renderer);
+        }
+
+        for (std::shared_ptr<soldier> soldier : soldiers) {
+            soldier->display(renderer,soldierTexture);
         }
 
         for (projectile& projectile : projectiles) {

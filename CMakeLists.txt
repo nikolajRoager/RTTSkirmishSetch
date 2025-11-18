@@ -27,4 +27,6 @@ add_executable(skirmishSketch main.cpp
         soldier.cpp
         soldier.h
         projectile.cpp
-        projectile.h)
+        projectile.h
+        base.cpp
+        base.h)
