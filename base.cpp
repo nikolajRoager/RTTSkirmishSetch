@@ -12,20 +12,13 @@ base::base(double x, double y, double radius) {
 
     frontlineLength=0;
     frontline.emplace_back(x+radius,y-radius,x+radius,y+radius,frontlineLength);
-    std::cout <<"DUD "<<frontlineLength<<std::endl;
     frontlineLength+=frontline[0].length;
     frontline.emplace_back(x+radius,y+radius,x-radius,y+radius,frontlineLength);
-    std::cout <<"DUD "<<frontlineLength<<std::endl;
     frontlineLength+=frontline[1].length;
     frontline.emplace_back(x-radius,y+radius,x-radius,y-radius,frontlineLength);
-    std::cout <<"DUD "<<frontlineLength<<std::endl;
     frontlineLength+=frontline[2].length;
     frontline.emplace_back(x-radius,y-radius,x+radius,y-radius,frontlineLength);
-    std::cout <<"DUD "<<frontlineLength<<std::endl;
     frontlineLength+=frontline[3].length;
-    std::cout <<"DUD "<<frontlineLength<<std::endl;
-
-
 }
 
 void base::addSoldier(std::shared_ptr<soldier> s) {
@@ -40,11 +33,14 @@ void base::addSoldier(std::shared_ptr<soldier> s) {
 }
 
 void base::updateSoldierLocations() {
+    int squadId =0;
     for (auto& squad : squads) {
         //If the soldiers are spread evenly along the frontline, what will be their spacing
         double spacing = frontlineLength/squad.second.size();
 
-        double length=0;
+        //Try to make sure different squads don't overlap
+        double length=squadId*spacing/3;
+        ++squadId;
         int lineId = 0;
         for (auto& s : squad.second) {
             for (int i = 1; i < frontline.size(); i++) {

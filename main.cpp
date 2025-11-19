@@ -94,8 +94,13 @@ int main() {
     soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX(),bases[0].getY()-20,0));
     soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY(),0));
     soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY()-20,0));
-    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY()-40,0));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-20,bases[0].getY()+20,0));
 
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()+40,bases[0].getY(),1));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX(),bases[0].getY()+40,1));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX(),bases[0].getY()-40,1));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-40,bases[0].getY(),1));
+    soldiers.emplace_back(std::make_shared<soldier>(bases[0].getX()-40,bases[0].getY()-40,1));
 
     //Run
     bool quit = false;
@@ -118,6 +123,7 @@ int main() {
         }
 
         for (std::shared_ptr<soldier> s: soldiers) {
+            //If Soldiers are unassigned, move to the nearest base
             if (s->unassigned()) {
                 int nearestBase = -1;
                 double nearestDistance = 0;
@@ -131,6 +137,7 @@ int main() {
                 s->setBase(&bases[nearestBase]);
                 bases[nearestBase].addSoldier(s);
             }
+            s->update(dt);
  //           s.shoot(projectiles,soldiers,generator,dt);
         }
         for (projectile& projectile : projectiles) {

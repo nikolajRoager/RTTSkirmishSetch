@@ -13,6 +13,7 @@
 #include "texwrap.h"
 
 #define BULLET_SPEED 500
+#define WALK_SPEED 50
 
 class base;
 
@@ -34,6 +35,8 @@ public:
         postX=x;
         postY=y;
     }
+
+    void update(double dt);
 
     [[nodiscard]] double getX() const {return x;}
     [[nodiscard]] double getY() const {return y;}

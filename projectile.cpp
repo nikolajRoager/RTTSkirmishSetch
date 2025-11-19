@@ -4,6 +4,7 @@
 
 #include "projectile.h"
 
+#include <cmath>
 #include <iostream>
 
 projectile::projectile(double x, double y, double speed, double targetX, double targetY) {

@@ -8,19 +8,43 @@
 #include <iostream>
 
 void soldier::display(SDL_Renderer *renderer, const texwrap& soldierTexture) const {
-    soldierTexture.render(x,y,renderer,1.0,true);
+    Uint8 r=255; Uint8 g=255; Uint8 b=255;
+    switch (allegiance) {
+        case 0:
+            r=255; g=0; b=0;
+            break;
+        case 1:
+            r=0; g=255; b=0;
+            break;
+        case 2:
+            r=0; g=0; b=255;
+            break;
+
+        default:
+            break;
+    }
+
+    soldierTexture.render(x,y,r,g,b,renderer,1.0,true);
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderDrawLine(renderer,x,y,postX,postY);
-    /*
-    double p_angle=0;
-    double dtheta = 0.1;
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    for (double angle = dtheta; angle < 360; angle += dtheta) {
-        SDL_RenderDrawLine(renderer,x+range*cos(p_angle),y+range*sin(p_angle),x+range*cos(angle),y+range*sin(angle));
-        p_angle = angle;
+}
+
+
+void soldier::update(double dt) {
+    double targetDistanceX = postX - x;
+    double targetDistanceY = postY - y;
+
+    double distance = sqrt(targetDistanceX * targetDistanceX + targetDistanceY * targetDistanceY);
+
+    if (distance>0.1) {
+        x+=dt*WALK_SPEED*targetDistanceX /distance;
+        y+=dt*WALK_SPEED*targetDistanceY /distance;
     }
-    */
+    else {
+        x=postX;
+        y=postY;
+    }
 }
 
 
@@ -32,7 +56,7 @@ void soldier::shoot(std::list<projectile> &projectiles, const std::vector<soldie
     for (int i = 0; i< soldiers.size(); ++i) {
         double dist = sqrt(pow(x-soldiers[i].x,2)+pow(y-soldiers[i].y,2));
 
-        //We wouldn't want to shoot ourselves, and we wouldn't waste bullets on someone out of range
+        //We wouldn't want to shoot ourselves (the way bullets are handled, shooting at someone on top of me actually kills myself), and we wouldn't waste bullets on someone out of range
         if (dist>16 && dist<range && soldiers[i].allegiance!=allegiance) {
             totalWeight+=range-dist;
             targets.emplace_back(totalWeight,i);
