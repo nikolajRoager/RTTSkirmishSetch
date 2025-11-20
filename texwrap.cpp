@@ -105,4 +105,27 @@ void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL
     SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,0,&centerPoint ,flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
+void texwrap::renderExtended(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer *renderer, double scaleX, double scaleY, double angle, bool center, bool flip, unsigned int frames, unsigned int frame) const {
+    //Set rendering space and render to screen
+    int w = (width)/frames;
+
+    SDL_Rect renderQuad = { static_cast<int>(x), static_cast<int>(y), w, height};
+
+    renderQuad.w *= scaleX;
+    renderQuad.h *= scaleY;
+
+    SDL_Rect srect = { w*(int)frame, 0, w, height };
+
+    if (center) {
+        renderQuad.x -= renderQuad.w/2;
+        renderQuad.y -= renderQuad.h/2;
+    }
+
+    //Render to screen
+    SDL_SetTextureColorMod(tex, r,g,b);
+    SDL_SetTextureAlphaMod(tex,a);
+    SDL_Point centerPoint = {0, 0};
+    SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,angle,&centerPoint ,flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+}
+
 

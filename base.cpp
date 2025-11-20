@@ -57,11 +57,22 @@ void base::updateSoldierLocations() {
 }
 
 
-void base::display(SDL_Renderer* renderer) const {
+void base::display(SDL_Renderer* renderer, bool selected, bool target) const {
 
     SDL_Rect rect = {(int)x-10,(int)y-10,20,20};
     SDL_SetRenderDrawColor(renderer,255,255,255,255);
     SDL_RenderFillRect(renderer,&rect);
+
+    if (selected) {
+        SDL_SetRenderDrawColor(renderer,255,255,255,255);
+        SDL_Rect selectRect = {(int)x-20,(int)y-20,40,40};
+        SDL_RenderDrawRect(renderer,&selectRect);
+    }
+    if (target) {
+        SDL_SetRenderDrawColor(renderer,255,255,255,255);
+        SDL_Rect selectRect = {(int)x-30,(int)y-30,60,60};
+        SDL_RenderDrawRect(renderer,&selectRect);
+    }
 
     for (const auto& line : frontline) {
         SDL_RenderDrawLine(renderer,line.x0,line.y0,line.x1,line.y1);
@@ -76,3 +87,5 @@ void base::display(SDL_Renderer* renderer) const {
     }
 }
 
+void base::moveSoldierTo(int allegiance,base &target, bool all) {
+}

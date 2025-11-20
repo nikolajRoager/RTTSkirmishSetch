@@ -18,12 +18,15 @@ public:
 
     base(double x, double y,double radius);
 
-    void display(SDL_Renderer* renderer) const;
+    void display(SDL_Renderer* renderer, bool selected, bool target) const;
 
     [[nodiscard]] double getX() const {return x;}
     [[nodiscard]] double getY() const {return y;}
 
     void addSoldier(std::shared_ptr<soldier> s);
+
+    ///Order either all or half soldiers to move to the target base
+    void moveSoldierTo (int allegiance,base& target, bool all);
 private:
     double x;
     double y;

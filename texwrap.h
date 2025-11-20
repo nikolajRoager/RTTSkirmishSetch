@@ -37,6 +37,8 @@ public:
 
     void render(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer* renderer, double scale=1.0, bool center=false, bool flip=false, unsigned int frames=1, unsigned int frame=0) const;
 
+    void renderExtended(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer* renderer, double scaleX, double scaleY, double angle , bool center=false, bool flip=false, unsigned int frames=1, unsigned int frame=0) const;
+
     ///Get width of image in pixels
     [[nodiscard]] int getWidth() const {return width;}
     ///Get height of image in pixels

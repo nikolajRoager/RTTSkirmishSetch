@@ -12,6 +12,10 @@
 #include "soldier.h"
 #include "texwrap.h"
 
+void drawArrow(SDL_Renderer* renderer, double x0, double y0, double x1, double y1) {
+    SDL_SetRenderDrawColor(renderer,255,0,0,255);
+    SDL_RenderDrawLine(renderer,x0,y0,x1,y1);
+}
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -107,6 +111,17 @@ int main() {
 
     unsigned int pmillis=SDL_GetTicks();
 
+    int mouseXPos=0,mouseYPos=0;
+    SDL_GetMouseState(&mouseXPos,&mouseYPos);
+    bool previousLeftMouseDown=false;
+    bool previousRightMouseDown=false;
+    bool leftMouseDown=false;
+    bool rightMouseDown=false;
+
+    std::set<int> selectedBases;
+
+    int mouseOverBase=-1;
+
     while (!quit) {
 
         //Milliseconds since program start is preferred time measurement for animations
@@ -114,15 +129,61 @@ int main() {
         //MAY be 0 on the very first loop
         double dt =  ( millis - pmillis ) * 0.001;
 
+        previousLeftMouseDown = leftMouseDown;
+        previousRightMouseDown = rightMouseDown;
         //Poll events
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
             }
+            else if (event.type == SDL_MOUSEMOTION) {
+                SDL_GetMouseState( &mouseXPos, &mouseYPos );
+            }
+            else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    leftMouseDown=true;
+                }
+                else if (event.button.button == SDL_BUTTON_RIGHT) {
+                    rightMouseDown=true;
+                }
+            }
+            else if (event.type == SDL_MOUSEBUTTONUP) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    leftMouseDown=false;
+                }
+                else if (event.button.button == SDL_BUTTON_RIGHT) {
+                    rightMouseDown=false;
+                }
+            }
         }
 
-        for (std::shared_ptr<soldier> s: soldiers) {
+        mouseOverBase=-1;
+        if (leftMouseDown) {
+            for (int i = 0; i < bases.size(); i++) {
+                double baseX = bases[i].getX();
+                double baseY = bases[i].getY();
+                if (std::abs(baseX-mouseXPos)<10 && std::abs(baseY-mouseYPos)<10) {
+                    selectedBases.insert(i);
+                    mouseOverBase=i;
+                }
+            }
+        }
+        else {
+            if (!selectedBases.empty()) {
+
+                for (int i : selectedBases) {
+                    if (i!=mouseOverBase) {
+                        bases[i].moveSoldierTo(0,bases[mouseOverBase],previousRightMouseDown);
+                    }
+                }
+
+                selectedBases.clear();
+            }
+        }
+
+
+        for (std::shared_ptr<soldier> s : soldiers) {
             //If Soldiers are unassigned, move to the nearest base
             if (s->unassigned()) {
                 int nearestBase = -1;
@@ -153,9 +214,22 @@ int main() {
         SDL_SetRenderDrawColor(renderer, 0x40, 0xF0, 0x40, 0x00);
         SDL_RenderClear( renderer );
 
-        for (const base& base : bases) {
-            base.display(renderer);
+        for (int i = 0 ; i < bases.size(); i++) {
+            const base& base = bases[i];
+            base.display(renderer,selectedBases.contains(i),i==mouseOverBase);
         }
+
+
+
+        for (int i : selectedBases) {
+            if (i!=mouseOverBase) {
+                double baseX = bases[i].getX();
+                double baseY = bases[i].getY();
+
+                drawArrow(renderer,baseX,baseY,mouseXPos,mouseYPos);
+            }
+        }
+
 
         for (std::shared_ptr<soldier> soldier : soldiers) {
             soldier->display(renderer,soldierTexture);
